@@ -8,7 +8,7 @@ pkgname=(opencv
          python-opencv
          opencv-cuda)
 pkgver=4.8.1
-pkgrel=3
+pkgrel=4
 pkgdesc='Open Source Computer Vision Library'
 arch=(x86_64)
 license=(BSD)
@@ -33,6 +33,7 @@ depends=(abseil-cpp
          libwebp
          openexr
          openjpeg2
+         verdict
          protobuf
          tbb
          zlib)
