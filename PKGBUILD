@@ -11,7 +11,7 @@ pkgver=4.9.0
 pkgrel=1
 pkgdesc='Open Source Computer Vision Library'
 arch=(x86_64)
-license=(BSD)
+license=(Apache-2.0)
 url='https://opencv.org/'
 depends=(abseil-cpp
          cblas
@@ -124,9 +124,6 @@ build() {
 package_opencv() {
   DESTDIR="$pkgdir" cmake --install build
 
-  # install license file
-  install -Dm644 $pkgbase-$pkgver/LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname
-
   # separate samples package
   mv "$pkgdir"/usr/share/opencv4/samples "$srcdir"
 
@@ -145,9 +142,6 @@ package_opencv-samples() {
 
   mkdir -p "$pkgdir"/usr/share/opencv4
   mv samples "$pkgdir"/usr/share/opencv4
-
-  # install license file
-  install -Dm644 $pkgbase-$pkgver/LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname
 }
 
 package_python-opencv() {
@@ -165,9 +159,6 @@ package_python-opencv() {
   unset optdepends
 
   DESTDIR="$pkgdir" cmake --install build/modules/python3
-
-  # install license file
-  install -Dm644 $pkgbase-$pkgver/LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname
 }
 
 package_opencv-cuda() {
@@ -178,9 +169,6 @@ package_opencv-cuda() {
   options=(!debug)
 
   DESTDIR="$pkgdir" cmake --install build-cuda
-
-  # install license file
-  install -Dm644 $pkgbase-$pkgver/LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname
 
   # Split samples
   rm -r "$pkgdir"/usr/share/opencv4/samples
