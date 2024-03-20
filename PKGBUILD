@@ -42,7 +42,6 @@ makedepends=(ant
              cudnn
              eigen
              fmt
-             gcc12
              glew
              hdf5
              java-environment
@@ -139,8 +138,6 @@ build() {
     -DBUILD_WITH_DEBUG_INFO=OFF \
     -DWITH_CUDA=ON \
     -DWITH_CUDNN=ON \
-    -DCMAKE_C_COMPILER=gcc-12 \
-    -DCMAKE_CXX_COMPILER=g++-12 \
     -DCUDA_ARCH_BIN='52-real;53-real;60-real;61-real;62-real;70-real;72-real;75-real;80-real;86-real;87-real;89-real;90-real;90-virtual' \
     -DCUDA_ARCH_PTX='90-virtual'
   cmake --build build-cuda
