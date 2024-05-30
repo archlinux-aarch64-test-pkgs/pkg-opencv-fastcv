@@ -66,19 +66,17 @@ optdepends=('opencv-samples: samples'
             'java-runtime: Java interface')
 source=(git+https://github.com/opencv/opencv#tag=$pkgver
         git+https://github.com/opencv/opencv_contrib#tag=$pkgver
-        vtk9.patch
-        opencv-cudnn9.patch::https://patch-diff.githubusercontent.com/raw/opencv/opencv/pull/25412.patch)
+        vtk9.patch)
 sha256sums=('b0d2012628b4224c7dd79aa98010586544e16858617c88c807014e11696b2ca3'
             '36ddaddd6f50cf13115ecf1a4777940739c4727e64135a52e768fa28ac163d4a'
-            'f35a2d4ea0d6212c7798659e59eda2cb0b5bc858360f7ce9c696c77d3029668e'
-            'db2a2dd99e52560e4c8b2ef7d578120f4bdc4232f71c871e732097232c83e2d4')
+            'f35a2d4ea0d6212c7798659e59eda2cb0b5bc858360f7ce9c696c77d3029668e')
 
 prepare() {
   pushd opencv
   patch -p1 < ../vtk9.patch # Don't require all vtk optdepends
 
-  patch -p1 < ../opencv-cudnn9.patch # Fix build with CUDNN 9
-
+  # fix build with cudnn 9
+  git cherry-pick -n 05e48605a0aea00d3a89b9ab5e25cdf89568aa28
   # fix build with CUDA 12.4
   git cherry-pick -n 1668203a1c6474b8368e27c55abc10ae7f17c841
   popd
