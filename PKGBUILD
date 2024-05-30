@@ -8,7 +8,7 @@ pkgname=(opencv
          python-opencv
          opencv-cuda)
 pkgver=4.9.0
-pkgrel=9
+pkgrel=8
 pkgdesc='Open Source Computer Vision Library'
 arch=(x86_64)
 license=(Apache-2.0)
@@ -66,25 +66,28 @@ optdepends=('opencv-samples: samples'
             'java-runtime: Java interface')
 source=(git+https://github.com/opencv/opencv#tag=$pkgver
         git+https://github.com/opencv/opencv_contrib#tag=$pkgver
-        $pkgname-cccl-2.2.0.zip::https://github.com/NVIDIA/cccl/archive/refs/tags/v2.2.0.zip
         vtk9.patch
-        fix-nppi-bufsize-type.patch
         opencv-cudnn9.patch::https://patch-diff.githubusercontent.com/raw/opencv/opencv/pull/25412.patch)
 sha256sums=('b0d2012628b4224c7dd79aa98010586544e16858617c88c807014e11696b2ca3'
             '36ddaddd6f50cf13115ecf1a4777940739c4727e64135a52e768fa28ac163d4a'
-            'f0899311b537614f3bb79fcb20e5fa09e72b857ba3e5ef5d13ef64c6710483e7'
             'f35a2d4ea0d6212c7798659e59eda2cb0b5bc858360f7ce9c696c77d3029668e'
-            '993032a43a62faecc56f3f7aeaed29e471605dabdf28579fbeb36d52ecaa4060'
             'db2a2dd99e52560e4c8b2ef7d578120f4bdc4232f71c871e732097232c83e2d4')
 
 prepare() {
-  patch -d $pkgname -p1 < vtk9.patch # Don't require all vtk optdepends
+  pushd opencv
+  patch -p1 < ../vtk9.patch # Don't require all vtk optdepends
 
-  # fix type of several buffer size variables (NPP from CUDA 12.4 has breaking API change
-  # as several function parameters were changed from `int*` to `size_t*`)
-  patch -d opencv_contrib -Np1 < fix-nppi-bufsize-type.patch
+  patch -p1 < ../opencv-cudnn9.patch # Fix build with CUDNN 9
 
-  patch -d opencv -p1 < opencv-cudnn9.patch # Fix build with CUDNN 9
+  # fix build with CUDA 12.4
+  git cherry-pick -n 1668203a1c6474b8368e27c55abc10ae7f17c841
+  popd
+
+  pushd opencv_contrib
+  # fix build with CUDA 12.4
+  git cherry-pick -n 4e766a039eda04b75f28f6905e4192d99b7874c7
+  git cherry-pick -n 1ed3dd2c53888e3289afdb22ec4e9ebbff3dba87
+  git cherry-pick -n 8c16a489a1fa9e2ccf21ce8eeb7fbb1affe548b1
 }
 
 build() {
@@ -123,22 +126,6 @@ build() {
   cmake -B build -S $pkgname $_opts \
     -DBUILD_WITH_DEBUG_INFO=ON
   cmake --build build
-
-  # opencv 4.9.0 does not build with thrust 2.3.0 from CUDA 12.4
-  # see https://github.com/opencv/opencv_contrib/issues/3690
-  # building thrust 2.2.0 (version from CUDA 12.3) works around this
-  cmake -B build-cccl -S cccl-2.2.0 -DCMAKE_INSTALL_PREFIX="$srcdir/install-cccl" \
-    -DCCCL_ENABLE_TESTING=OFF \
-    -DTHRUST_ENABLE_HEADER_TESTING=OFF \
-    -DTHRUST_ENABLE_TESTING=OFF \
-    -DTHRUST_ENABLE_EXAMPLES=OFF \
-    -DCUB_ENABLE_HEADER_TESTING=OFF \
-    -DCUB_ENABLE_TESTING=OFF \
-    -DCUB_ENABLE_EXAMPLES=OFF \
-    -DLIBCUDACXX_ENABLE_CMAKE_TESTS=OFF
-  cmake --build build-cccl
-  cmake --install build-cccl
-  export NVCC_PREPEND_FLAGS="$NVCC_PREPEND_FLAGS -I $srcdir/install-cccl/include"
 
   CFLAGS="${CFLAGS} -fno-lto" CXXFLAGS="${CXXFLAGS} -fno-lto" LDFLAGS="${LDFLAGS} -fno-lto" \
   cmake -B build-cuda -S $pkgname $_opts \
