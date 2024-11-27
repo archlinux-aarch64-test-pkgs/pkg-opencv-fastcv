@@ -6,9 +6,10 @@ pkgbase=opencv
 pkgname=(opencv
          opencv-samples
          python-opencv
-         opencv-cuda)
+         opencv-cuda
+         python-opencv-cuda)
 pkgver=4.10.0
-pkgrel=14
+pkgrel=15
 pkgdesc='Open Source Computer Vision Library'
 arch=(x86_64)
 license=(Apache-2.0)
@@ -196,4 +197,23 @@ package_opencv-cuda() {
 
   # Split Python bindings
   rm -r "$pkgdir"/usr/lib/python3*
+}
+
+package_python-opencv-cuda() {
+  pkgdesc='Python bindings for OpenCV (with CUDA support)'
+  depends=(fmt
+           glew
+           hdf5
+           jsoncpp
+           opencv-cuda
+           openmpi
+           pugixml
+           python-numpy
+           qt6-base
+           vtk)
+  conflicts=(python-opencv)
+  provides=(python-opencv=$pkgver)
+  unset optdepends
+
+  DESTDIR="$pkgdir" cmake --install build-cuda/modules/python3
 }
