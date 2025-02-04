@@ -113,7 +113,7 @@ build() {
          -DEIGEN_INCLUDE_PATH=/usr/include/eigen3 \
          -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
          -Dprotobuf_MODULE_COMPATIBLE=ON"
- 
+
   cmake -B build -S $pkgname $_opts \
     -DBUILD_WITH_DEBUG_INFO=ON
   cmake --build build
@@ -125,6 +125,7 @@ build() {
     -DWITH_CUDNN=ON \
     -DCMAKE_C_COMPILER=gcc-13 \
     -DCMAKE_CXX_COMPILER=g++-13 \
+    -DCUDA_NVCC_FLAGS="--threads 0" \
     -DCUDA_ARCH_BIN='52-real;53-real;60-real;61-real;62-real;70-real;72-real;75-real;80-real;86-real;87-real;89-real;90-real;90-virtual' \
     -DCUDA_ARCH_PTX='90-virtual'
   cmake --build build-cuda
