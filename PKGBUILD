@@ -77,6 +77,9 @@ prepare() {
   pushd opencv
   git cherry-pick -n cb8030809e0278d02fa335cc1f5ec7c3c17548e0 # Fix configuring with CMake version 4
   patch -p1 < ../vtk9.patch # Don't require all vtk optdepends
+  # https://github.com/opencv/opencv/issues/27223
+  # https://bugreports.qt.io/browse/QTBUG-134774
+  sed -i 's/add_definitions(${Qt${QT_VERSION_MAJOR}${dt_dep}_DEFINITIONS})/link_libraries(${Qt${QT_VERSION_MAJOR}${dt_dep}})/' modules/highgui/CMakeLists.txt
   popd
 
   pushd opencv_contrib
