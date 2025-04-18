@@ -75,6 +75,7 @@ options=(!lto) # https://gitlab.archlinux.org/archlinux/packaging/packages/kdenl
 
 prepare() {
   pushd opencv
+  git cherry-pick -n cb8030809e0278d02fa335cc1f5ec7c3c17548e0 # Fix configuring with CMake version 4
   patch -p1 < ../vtk9.patch # Don't require all vtk optdepends
   popd
 
