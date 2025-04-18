@@ -131,8 +131,9 @@ build() {
     -DCMAKE_CXX_COMPILER=g++-13 \
     -DCUDA_NVCC_FLAGS="--threads 0" \
     -DCUDA_ARCH_BIN='52-real;53-real;60-real;61-real;62-real;70-real;72-real;75-real;80-real;86-real;87-real;89-real;90-real;90-virtual' \
-    -DCUDA_ARCH_PTX='90-virtual'
-  cmake --build build-cuda
+    -DCUDA_ARCH_PTX='90-virtual' \
+    -DENABLE_CUDA_FIRST_CLASS_LANGUAGE=ON
+  cmake --build build-cuda --verbose
 }
 
 package_opencv() {
