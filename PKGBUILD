@@ -87,43 +87,45 @@ prepare() {
 
 build() {
   export JAVA_HOME="/usr/lib/jvm/default"
-  # cmake's FindLAPACK doesn't add cblas to LAPACK_LIBRARIES, so we need to specify them manually
-  _opts="-DWITH_OPENCL=ON \
-         -DWITH_OPENGL=ON \
-         -DOpenGL_GL_PREFERENCE=LEGACY \
-         -DCMAKE_CXX_STANDARD=17 \
-         -DWITH_TBB=ON \
-         -DWITH_VULKAN=ON \
-         -DWITH_QT=ON \
-         -DBUILD_TESTS=OFF \
-         -DBUILD_PERF_TESTS=OFF \
-         -DBUILD_EXAMPLES=ON \
-         -DBUILD_PROTOBUF=OFF \
-         -DPROTOBUF_UPDATE_FILES=ON \
-         -DINSTALL_C_EXAMPLES=ON \
-         -DINSTALL_PYTHON_EXAMPLES=ON \
-         -DCMAKE_INSTALL_PREFIX=/usr \
-         -DCPU_BASELINE_DISABLE=SSE3 \
-         -DCPU_BASELINE_REQUIRE=SSE2 \
-         -DOPENCV_EXTRA_MODULES_PATH=$srcdir/opencv_contrib/modules \
-         -DOPENCV_SKIP_PYTHON_LOADER=ON \
-         -DLAPACK_LIBRARIES=/usr/lib/liblapack.so;/usr/lib/libblas.so;/usr/lib/libcblas.so \
-         -DLAPACK_CBLAS_H=/usr/include/cblas.h \
-         -DLAPACK_LAPACKE_H=/usr/include/lapacke.h \
-         -DOPENCV_GENERATE_PKGCONFIG=ON \
-         -DOPENCV_ENABLE_NONFREE=ON \
-         -DOPENCV_JNI_INSTALL_PATH=lib \
-         -DOPENCV_GENERATE_SETUPVARS=OFF \
-         -DEIGEN_INCLUDE_PATH=/usr/include/eigen3 \
-         -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
-         -Dprotobuf_MODULE_COMPATIBLE=ON"
+  local cmake_options=(
+    -DWITH_OPENCL=ON
+    -DWITH_OPENGL=ON
+    -DOpenGL_GL_PREFERENCE=LEGACY
+    -DCMAKE_CXX_STANDARD=17
+    -DWITH_TBB=ON
+    -DWITH_VULKAN=ON
+    -DWITH_QT=ON
+    -DBUILD_TESTS=OFF
+    -DBUILD_PERF_TESTS=OFF
+    -DBUILD_EXAMPLES=ON
+    -DBUILD_PROTOBUF=OFF
+    -DPROTOBUF_UPDATE_FILES=ON
+    -DINSTALL_C_EXAMPLES=ON
+    -DINSTALL_PYTHON_EXAMPLES=ON
+    -DCMAKE_INSTALL_PREFIX=/usr
+    -DCPU_BASELINE_DISABLE=SSE3
+    -DCPU_BASELINE_REQUIRE=SSE2
+    -DOPENCV_EXTRA_MODULES_PATH="$srcdir"/opencv_contrib/modules
+    -DOPENCV_SKIP_PYTHON_LOADER=ON
+    # cmake's FindLAPACK doesn't add cblas to LAPACK_LIBRARIES, so we need to specify them manually
+    -DLAPACK_LIBRARIES="/usr/lib/liblapack.so;/usr/lib/libblas.so;/usr/lib/libcblas.so"
+    -DLAPACK_CBLAS_H=/usr/include/cblas.h
+    -DLAPACK_LAPACKE_H=/usr/include/lapacke.h
+    -DOPENCV_GENERATE_PKGCONFIG=ON
+    -DOPENCV_ENABLE_NONFREE=ON
+    -DOPENCV_JNI_INSTALL_PATH=lib
+    -DOPENCV_GENERATE_SETUPVARS=OFF
+    -DEIGEN_INCLUDE_PATH=/usr/include/eigen3
+    -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON
+    -Dprotobuf_MODULE_COMPATIBLE=ON
+  )
 
-  cmake -B build -S $pkgname $_opts \
+  cmake -B build -S $pkgname "${cmake_options[@]}" \
     -DBUILD_WITH_DEBUG_INFO=ON
   cmake --build build
 
   CFLAGS="${CFLAGS} -fno-lto" CXXFLAGS="${CXXFLAGS} -fno-lto" LDFLAGS="${LDFLAGS} -fno-lto" \
-  cmake -B build-cuda -S $pkgname $_opts \
+  cmake -B build-cuda -S $pkgname "${cmake_options[@]}" \
     -DBUILD_WITH_DEBUG_INFO=OFF \
     -DWITH_CUDA=ON \
     -DWITH_CUDNN=ON \
