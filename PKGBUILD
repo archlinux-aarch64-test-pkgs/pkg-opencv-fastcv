@@ -67,10 +67,12 @@ optdepends=('opencv-samples: samples'
             'java-runtime: Java interface')
 source=(git+https://github.com/opencv/opencv#tag=$pkgver
         git+https://github.com/opencv/opencv_contrib#tag=$pkgver
-        vtk9.patch)
+        vtk9.patch
+        fix-cuda-flags.patch)
 sha256sums=('92142ded037fd61afc092ccd29a39bf1fa38bfd8e96c78e1c0abbfe60d2ddb08'
             '8b6f8ea7dfcf5ae4cc95bb4fb68e25cbe912fc28bf681552ddd13d7afee5d5d9'
-            'f35a2d4ea0d6212c7798659e59eda2cb0b5bc858360f7ce9c696c77d3029668e')
+            'f35a2d4ea0d6212c7798659e59eda2cb0b5bc858360f7ce9c696c77d3029668e'
+            '95472ecfc2693c606f0dd50be2f012b4d683b7b0a313f51484da4537ab8b2bfe')
 options=(!lto) # https://gitlab.archlinux.org/archlinux/packaging/packages/kdenlive/-/issues/8
 
 prepare() {
@@ -80,6 +82,9 @@ prepare() {
   # https://github.com/opencv/opencv/issues/27223
   # https://bugreports.qt.io/browse/QTBUG-134774
   sed -i 's/add_definitions(${Qt${QT_VERSION_MAJOR}${dt_dep}_DEFINITIONS})/link_libraries(${Qt${QT_VERSION_MAJOR}${dt_dep}})/' modules/highgui/CMakeLists.txt
+  # OpenCV passes all CXXFLAGS to nvcc through -Xcompiler, which does not work for '-Wp,something' flags
+  # We remove the -Xcompiler and pass our CXXFLAGS through cmake's CUDAFLAGS
+  patch -p1 < ../fix-cuda-flags.patch
   popd
 
   pushd opencv_contrib
@@ -124,6 +129,8 @@ build() {
     -DBUILD_WITH_DEBUG_INFO=ON
   cmake --build build
 
+  # Avoid nvcc intercepting -Werror=format-security: Value 'format-security' is not defined for option 'Werror'
+  CUDAFLAGS="${CXXFLAGS/-Werror=format-security/-Xcompiler -Werror=format-security} -fno-lto --threads 0" \
   CFLAGS="${CFLAGS} -fno-lto" CXXFLAGS="${CXXFLAGS} -fno-lto" LDFLAGS="${LDFLAGS} -fno-lto" \
   cmake -B build-cuda -S $pkgname "${cmake_options[@]}" \
     -DBUILD_WITH_DEBUG_INFO=OFF \
@@ -131,7 +138,6 @@ build() {
     -DWITH_CUDNN=ON \
     -DCMAKE_C_COMPILER=gcc-13 \
     -DCMAKE_CXX_COMPILER=g++-13 \
-    -DCUDA_NVCC_FLAGS="--threads 0" \
     -DCUDA_ARCH_BIN='52-real;53-real;60-real;61-real;62-real;70-real;72-real;75-real;80-real;86-real;87-real;89-real;90-real;90-virtual' \
     -DCUDA_ARCH_PTX='90-virtual' \
     -DENABLE_CUDA_FIRST_CLASS_LANGUAGE=ON
