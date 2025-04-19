@@ -129,6 +129,10 @@ build() {
     -DBUILD_WITH_DEBUG_INFO=ON
   cmake --build build
 
+  # In general, we want to list all real archs (sm_XX) and the latest virtual arch (compute_XX) for future PTX compatibility.
+  # Valid values can be discovered from nvcc --help
+  local cuda_archs="50;52;53;60;61;62;70;72;75;80;86;87;89;90;90a;100;100a;101;101a;120;120a;120-virtual"
+
   # Avoid nvcc intercepting -Werror=format-security: Value 'format-security' is not defined for option 'Werror'
   CUDAFLAGS="${CXXFLAGS/-Werror=format-security/-Xcompiler -Werror=format-security} -fno-lto --threads 0" \
   CFLAGS="${CFLAGS} -fno-lto" CXXFLAGS="${CXXFLAGS} -fno-lto" LDFLAGS="${LDFLAGS} -fno-lto" \
@@ -138,9 +142,8 @@ build() {
     -DWITH_CUDNN=ON \
     -DCMAKE_C_COMPILER=gcc-13 \
     -DCMAKE_CXX_COMPILER=g++-13 \
-    -DCUDA_ARCH_BIN='52-real;53-real;60-real;61-real;62-real;70-real;72-real;75-real;80-real;86-real;87-real;89-real;90-real;90-virtual' \
-    -DCUDA_ARCH_PTX='90-virtual' \
-    -DENABLE_CUDA_FIRST_CLASS_LANGUAGE=ON
+    -DENABLE_CUDA_FIRST_CLASS_LANGUAGE=ON \
+    -DCMAKE_CUDA_ARCHITECTURES="$cuda_archs"
   cmake --build build-cuda --verbose
 }
 
