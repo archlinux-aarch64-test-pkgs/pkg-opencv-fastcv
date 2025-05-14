@@ -29,6 +29,7 @@ depends=(abseil-cpp
          libdc1394
          libglvnd
          libjpeg-turbo
+         libjxl
          libpng
          libtiff
          libwebp
@@ -100,6 +101,7 @@ build() {
     -DWITH_TBB=ON
     -DWITH_VULKAN=ON
     -DWITH_QT=ON
+    -DWITH_JPEGXL=ON
     -DBUILD_TESTS=OFF
     -DBUILD_PERF_TESTS=OFF
     -DBUILD_EXAMPLES=ON
