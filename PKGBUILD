@@ -9,7 +9,7 @@ pkgname=(opencv
          opencv-cuda
          python-opencv-cuda)
 pkgver=4.11.0
-pkgrel=11
+pkgrel=12
 pkgdesc='Open Source Computer Vision Library'
 arch=(x86_64)
 license=(Apache-2.0)
@@ -45,7 +45,7 @@ makedepends=(ant
              cudnn
              eigen
              fmt
-             gcc13
+             gcc14
              git
              glew
              hdf5
@@ -133,7 +133,8 @@ build() {
 
   # In general, we want to list all real archs (sm_XX) and the latest virtual arch (compute_XX) for future PTX compatibility.
   # Valid values can be discovered from nvcc --help
-  local cuda_archs="50;52;53;60;61;62;70;72;75;80;86;87;89;90;90a;100;100a;101;101a;120;120a;120-virtual"
+  # NOTE: thrust v2.8.2 (bundled in CUDA 12.9) is broken for archs 50 and 52, although they are still only "deprecated"
+  local cuda_archs="53;60;61;62;70;72;75;80;86;87;89;90;90a;100;100a;101;101a;120;120a;120-virtual"
 
   # Avoid nvcc intercepting -Werror=format-security: Value 'format-security' is not defined for option 'Werror'
   CUDAFLAGS="${CXXFLAGS/-Werror=format-security/-Xcompiler -Werror=format-security} -fno-lto --threads 0" \
@@ -142,8 +143,8 @@ build() {
     -DBUILD_WITH_DEBUG_INFO=OFF \
     -DWITH_CUDA=ON \
     -DWITH_CUDNN=ON \
-    -DCMAKE_C_COMPILER=gcc-13 \
-    -DCMAKE_CXX_COMPILER=g++-13 \
+    -DCMAKE_C_COMPILER=gcc-14 \
+    -DCMAKE_CXX_COMPILER=g++-14 \
     -DENABLE_CUDA_FIRST_CLASS_LANGUAGE=ON \
     -DCMAKE_CUDA_ARCHITECTURES="$cuda_archs"
   cmake --build build-cuda --verbose
