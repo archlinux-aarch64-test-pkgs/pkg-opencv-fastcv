@@ -9,7 +9,7 @@ pkgname=(opencv
          opencv-cuda
          python-opencv-cuda)
 pkgver=4.12.0
-pkgrel=4
+pkgrel=5
 pkgdesc='Open Source Computer Vision Library'
 arch=(x86_64)
 license=(Apache-2.0)
@@ -45,7 +45,6 @@ makedepends=(ant
              cudnn
              eigen
              fmt
-             gcc14
              git
              glew
              hdf5
@@ -79,6 +78,12 @@ options=(!lto) # https://gitlab.archlinux.org/archlinux/packaging/packages/kdenl
 prepare() {
   pushd opencv
   git cherry-pick -n cb8030809e0278d02fa335cc1f5ec7c3c17548e0 # Fix configuring with CMake version 4
+
+  # Support CUDA 13
+  git cherry-pick -n df23b593c52e0e18095a3d2e772fe13083e2ebe7 \
+                     42f89347005dcd14a671d30a52a046e45303833b \
+                     3278820f5df20a6d4170b7374a9b396250e36641
+
   patch -p1 < ../vtk9.patch # Don't require all vtk optdepends
   # https://github.com/opencv/opencv/issues/27223
   # https://bugreports.qt.io/browse/QTBUG-134774
@@ -89,6 +94,8 @@ prepare() {
   popd
 
   pushd opencv_contrib
+  # Support CUDA 13
+  git cherry-pick -n 9a9b173cd178e7c07a98896a009c2a2021a6b247
 }
 
 build() {
@@ -133,8 +140,7 @@ build() {
 
   # In general, we want to list all real archs (sm_XX) and the latest virtual arch (compute_XX) for future PTX compatibility.
   # Valid values can be discovered from nvcc --help
-  # NOTE: thrust v2.8.2 (bundled in CUDA 12.9) is broken for archs 50 and 52, although they are still only "deprecated"
-  local cuda_archs="53;60;61;62;70;72;75;80;86;87;89;90;90a;100;100a;101;101a;120;120a;120-virtual"
+  local cuda_archs="75;80;86;87;88;89;90;100;103;110;120;121;121-virtual"
 
   # Avoid nvcc intercepting -Werror=format-security: Value 'format-security' is not defined for option 'Werror'
   CUDAFLAGS="${CXXFLAGS/-Werror=format-security/-Xcompiler -Werror=format-security} -fno-lto --threads 0" \
@@ -143,8 +149,6 @@ build() {
     -DBUILD_WITH_DEBUG_INFO=OFF \
     -DWITH_CUDA=ON \
     -DWITH_CUDNN=ON \
-    -DCMAKE_C_COMPILER=gcc-14 \
-    -DCMAKE_CXX_COMPILER=g++-14 \
     -DENABLE_CUDA_FIRST_CLASS_LANGUAGE=ON \
     -DCMAKE_CUDA_ARCHITECTURES="$cuda_archs"
   cmake --build build-cuda --verbose
