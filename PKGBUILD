@@ -9,7 +9,7 @@ pkgname=(opencv
          opencv-cuda
          python-opencv-cuda)
 pkgver=4.12.0
-pkgrel=5
+pkgrel=6
 pkgdesc='Open Source Computer Vision Library'
 arch=(x86_64)
 license=(Apache-2.0)
@@ -83,6 +83,9 @@ prepare() {
   git cherry-pick -n df23b593c52e0e18095a3d2e772fe13083e2ebe7 \
                      42f89347005dcd14a671d30a52a046e45303833b \
                      3278820f5df20a6d4170b7374a9b396250e36641
+
+  # Support Eigen 5
+  git cherry-pick -n 353b4ddf52db48ba85d2efaa33310afa0eb73a72
 
   patch -p1 < ../vtk9.patch # Don't require all vtk optdepends
   # https://github.com/opencv/opencv/issues/27223
