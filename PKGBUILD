@@ -6,8 +6,8 @@ pkgbase=opencv
 pkgname=(opencv
          opencv-samples
          python-opencv
-         opencv-cuda
-         python-opencv-cuda
+        #  opencv-cuda
+        #  python-opencv-cuda
          opencv-fastcv
          python-opencv-fastcv
          opencv-fastcv-tests)
@@ -44,8 +44,8 @@ depends=(abseil-cpp
          zlib)
 makedepends=(ant
              cmake
-             cuda
-             cudnn
+            #  cuda
+            #  cudnn
              eigen
              fmt
              git
@@ -152,18 +152,18 @@ build() {
 
   # In general, we want to list all real archs (sm_XX) and the latest virtual arch (compute_XX) for future PTX compatibility.
   # Valid values can be discovered from nvcc --help
-  local cuda_archs="75;80;86;87;88;89;90;100;103;110;120;121;121-virtual"
+  # local cuda_archs="75;80;86;87;88;89;90;100;103;110;120;121;121-virtual"
 
   # Avoid nvcc intercepting -Werror=format-security: Value 'format-security' is not defined for option 'Werror'
-  CUDAFLAGS="${CXXFLAGS/-Werror=format-security/-Xcompiler -Werror=format-security} -fno-lto --threads 0" \
-  CFLAGS="${CFLAGS} -fno-lto" CXXFLAGS="${CXXFLAGS} -fno-lto" LDFLAGS="${LDFLAGS} -fno-lto" \
-  cmake -B build-cuda -S $pkgname "${cmake_options[@]}" \
-    -DBUILD_WITH_DEBUG_INFO=OFF \
-    -DWITH_CUDA=ON \
-    -DWITH_CUDNN=ON \
-    -DENABLE_CUDA_FIRST_CLASS_LANGUAGE=ON \
-    -DCMAKE_CUDA_ARCHITECTURES="$cuda_archs"
-  cmake --build build-cuda --verbose
+  # CUDAFLAGS="${CXXFLAGS/-Werror=format-security/-Xcompiler -Werror=format-security} -fno-lto --threads 0" \
+  # CFLAGS="${CFLAGS} -fno-lto" CXXFLAGS="${CXXFLAGS} -fno-lto" LDFLAGS="${LDFLAGS} -fno-lto" \
+  # cmake -B build-cuda -S $pkgname "${cmake_options[@]}" \
+  #   -DBUILD_WITH_DEBUG_INFO=OFF \
+  #   -DWITH_CUDA=ON \
+  #   -DWITH_CUDNN=ON \
+  #   -DENABLE_CUDA_FIRST_CLASS_LANGUAGE=ON \
+  #   -DCMAKE_CUDA_ARCHITECTURES="$cuda_archs"
+  # cmake --build build-cuda --verbose
 }
 
 package_opencv() {
@@ -206,44 +206,44 @@ package_python-opencv() {
   DESTDIR="$pkgdir" cmake --install build/modules/python3
 }
 
-package_opencv-cuda() {
-  pkgdesc+=' (with CUDA support)'
-  depends+=(cudnn)
-  conflicts=(opencv opencv-fastcv)
-  provides=(opencv=$pkgver)
-  options=(!debug)
+# package_opencv-cuda() {
+#   pkgdesc+=' (with CUDA support)'
+#   depends+=(cudnn)
+#   conflicts=(opencv opencv-fastcv)
+#   provides=(opencv=$pkgver)
+#   options=(!debug)
 
-  DESTDIR="$pkgdir" cmake --install build-cuda
+#   DESTDIR="$pkgdir" cmake --install build-cuda
 
-  # Split samples
-  rm -r "$pkgdir"/usr/share/opencv4/samples
+#   # Split samples
+#   rm -r "$pkgdir"/usr/share/opencv4/samples
 
-  # Add java symlinks expected by some binary blobs
-  ln -sr "$pkgdir"/usr/share/java/{opencv4/opencv-${pkgver//./},opencv}.jar
-  ln -sr "$pkgdir"/usr/lib/{libopencv_java${pkgver//./},libopencv_java}.so
+#   # Add java symlinks expected by some binary blobs
+#   ln -sr "$pkgdir"/usr/share/java/{opencv4/opencv-${pkgver//./},opencv}.jar
+#   ln -sr "$pkgdir"/usr/lib/{libopencv_java${pkgver//./},libopencv_java}.so
 
-  # Split Python bindings
-  rm -r "$pkgdir"/usr/lib/python3*
-}
+#   # Split Python bindings
+#   rm -r "$pkgdir"/usr/lib/python3*
+# }
 
-package_python-opencv-cuda() {
-  pkgdesc='Python bindings for OpenCV (with CUDA support)'
-  depends=(fmt
-           glew
-           hdf5
-           jsoncpp
-           opencv-cuda
-           openmpi
-           pugixml
-           python-numpy
-           qt6-base
-           vtk)
-  conflicts=(python-opencv python-opencv-fastcv)
-  provides=(python-opencv=$pkgver)
-  unset optdepends
+# package_python-opencv-cuda() {
+#   pkgdesc='Python bindings for OpenCV (with CUDA support)'
+#   depends=(fmt
+#            glew
+#            hdf5
+#            jsoncpp
+#            opencv-cuda
+#            openmpi
+#            pugixml
+#            python-numpy
+#            qt6-base
+#            vtk)
+#   conflicts=(python-opencv python-opencv-fastcv)
+#   provides=(python-opencv=$pkgver)
+#   unset optdepends
 
-  DESTDIR="$pkgdir" cmake --install build-cuda/modules/python3
-}
+#   DESTDIR="$pkgdir" cmake --install build-cuda/modules/python3
+# }
 
 package_opencv-fastcv() {
   pkgdesc+=' (with Qualcomm FastCV support)'
