@@ -7,11 +7,14 @@ pkgname=(opencv
          opencv-samples
          python-opencv
          opencv-cuda
-         python-opencv-cuda)
+         python-opencv-cuda
+         opencv-fastcv
+         python-opencv-fastcv
+         opencv-fastcv-tests)
 pkgver=4.13.0
 pkgrel=2
 pkgdesc='Open Source Computer Vision Library'
-arch=(x86_64)
+arch=('aarch64')
 license=(Apache-2.0)
 url='https://opencv.org/'
 depends=(abseil-cpp
@@ -111,8 +114,8 @@ build() {
     -DINSTALL_C_EXAMPLES=ON
     -DINSTALL_PYTHON_EXAMPLES=ON
     -DCMAKE_INSTALL_PREFIX=/usr
-    -DCPU_BASELINE_DISABLE=SSE3
-    -DCPU_BASELINE_REQUIRE=SSE2
+    # -DCPU_BASELINE_DISABLE=SSE3
+    # -DCPU_BASELINE_REQUIRE=SSE2
     -DOPENCV_EXTRA_MODULES_PATH="$srcdir"/opencv_contrib/modules
     -DOPENCV_SKIP_PYTHON_LOADER=ON
     # cmake's FindLAPACK doesn't add cblas to LAPACK_LIBRARIES, so we need to specify them manually
@@ -127,6 +130,21 @@ build() {
     -Dprotobuf_MODULE_COMPATIBLE=ON
     -DHDF5_NO_FIND_PACKAGE_CONFIG_FILE=ON
   )
+
+  # Clear cached FastCV variables to work around a re-configuration bug in OpenCV's cmake:
+  # on non-clean builds, cached FastCV_INCLUDE_PATH/FastCV_LIB_PATH cause the "external" code
+  # path to be taken, which doesn't create the imported target that FASTCV_LIBRARY="fastcv" expects.
+  cmake -B build-fastcv -UFastCV_INCLUDE_PATH -UFastCV_LIB_PATH -UFASTCV_LIBRARY -UHAVE_FASTCV \
+    -S $pkgname "${cmake_options[@]}" \
+    -DBUILD_WITH_DEBUG_INFO=OFF \
+    -DWITH_FASTCV=ON
+  cmake --build build-fastcv
+
+  # Build FastCV unit tests and perf tests
+  cmake -B build-fastcv -S $pkgname -UFastCV_INCLUDE_PATH -UFastCV_LIB_PATH -UFASTCV_LIBRARY -UHAVE_FASTCV \
+    "${cmake_options[@]}" -DBUILD_WITH_DEBUG_INFO=OFF -DWITH_FASTCV=ON \
+    -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON
+  cmake --build build-fastcv --target opencv_test_fastcv opencv_perf_fastcv
 
   cmake -B build -S $pkgname "${cmake_options[@]}" \
     -DBUILD_WITH_DEBUG_INFO=ON
@@ -191,7 +209,7 @@ package_python-opencv() {
 package_opencv-cuda() {
   pkgdesc+=' (with CUDA support)'
   depends+=(cudnn)
-  conflicts=(opencv)
+  conflicts=(opencv opencv-fastcv)
   provides=(opencv=$pkgver)
   options=(!debug)
 
@@ -220,9 +238,57 @@ package_python-opencv-cuda() {
            python-numpy
            qt6-base
            vtk)
-  conflicts=(python-opencv)
+  conflicts=(python-opencv python-opencv-fastcv)
   provides=(python-opencv=$pkgver)
   unset optdepends
 
   DESTDIR="$pkgdir" cmake --install build-cuda/modules/python3
+}
+
+package_opencv-fastcv() {
+  pkgdesc+=' (with Qualcomm FastCV support)'
+  depends+=(qcom-fastrpc qcom-fastcv-binaries)
+  conflicts=(opencv opencv-cuda)
+  provides=(opencv=$pkgver)
+  options=(!debug)
+
+  DESTDIR="$pkgdir" cmake --install build-fastcv
+
+  # Split samples
+  rm -r "$pkgdir"/usr/share/opencv4/samples
+
+  # Add java symlinks expected by some binary blobs
+  ln -sr "$pkgdir"/usr/share/java/{opencv4/opencv-${pkgver//./},opencv}.jar
+  ln -sr "$pkgdir"/usr/lib/{libopencv_java${pkgver//./},libopencv_java}.so
+
+  # Split Python bindings
+  rm -r "$pkgdir"/usr/lib/python3*
+}
+
+package_python-opencv-fastcv() {
+  pkgdesc='Python bindings for OpenCV (with Qualcomm FastCV support)'
+  depends=(fmt
+           glew
+           hdf5
+           jsoncpp
+           opencv-fastcv
+           openmpi
+           pugixml
+           python-numpy
+           qt6-base
+           vtk)
+  conflicts=(python-opencv python-opencv-cuda)
+  provides=(python-opencv=$pkgver)
+  unset optdepends
+
+  DESTDIR="$pkgdir" cmake --install build-fastcv/modules/python3
+}
+
+package_opencv-fastcv-tests() {
+  pkgdesc='Unit tests and perf tests for OpenCV FastCV module'
+  depends=(opencv-fastcv)
+  unset optdepends
+
+  install -Dm755 build-fastcv/bin/opencv_test_fastcv "$pkgdir"/usr/bin/opencv_test_fastcv
+  install -Dm755 build-fastcv/bin/opencv_perf_fastcv "$pkgdir"/usr/bin/opencv_perf_fastcv
 }
