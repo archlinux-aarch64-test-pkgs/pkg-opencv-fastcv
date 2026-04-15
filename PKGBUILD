@@ -130,13 +130,13 @@ build() {
   # on non-clean builds, cached FastCV_INCLUDE_PATH/FastCV_LIB_PATH cause the "external" code
   # path to be taken, which doesn't create the imported target that FASTCV_LIBRARY="fastcv" expects.
   cmake -B build-fastcv -UFastCV_INCLUDE_PATH -UFastCV_LIB_PATH -UFASTCV_LIBRARY -UHAVE_FASTCV \
-    -S $pkgname "${cmake_options[@]}" \
+    -S $pkgbase "${cmake_options[@]}" \
     -DBUILD_WITH_DEBUG_INFO=OFF \
     -DWITH_FASTCV=ON
   cmake --build build-fastcv
 
   # Build FastCV unit tests and perf tests
-  cmake -B build-fastcv -S $pkgname -UFastCV_INCLUDE_PATH -UFastCV_LIB_PATH -UFASTCV_LIBRARY -UHAVE_FASTCV \
+  cmake -B build-fastcv -S $pkgbase -UFastCV_INCLUDE_PATH -UFastCV_LIB_PATH -UFASTCV_LIBRARY -UHAVE_FASTCV \
     "${cmake_options[@]}" -DBUILD_WITH_DEBUG_INFO=OFF -DWITH_FASTCV=ON \
     -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON
   cmake --build build-fastcv --target opencv_test_fastcv opencv_perf_fastcv
