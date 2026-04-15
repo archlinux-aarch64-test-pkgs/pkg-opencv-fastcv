@@ -42,6 +42,7 @@ makedepends=(ant
             #  cuda
             #  cudnn
              eigen
+             fast_float
              fmt
              git
              glew
@@ -67,12 +68,14 @@ source=(git+https://github.com/opencv/opencv#tag=$pkgver
         git+https://github.com/opencv/opencv_contrib#tag=$pkgver
         vtk9.patch
         fix-cuda-flags.patch
-        fix-cudacodec-dependencies.patch)
+        fix-cudacodec-dependencies.patch
+        fix-std.patch)
 sha256sums=('efc754fc3888944007586133fc225f0136d1767020564b81e4d90f51e9d68b60'
             '3fc521a16314978de02d5b33e657a09a9567429d5801d3fb94e35581ea44d729'
             'f35a2d4ea0d6212c7798659e59eda2cb0b5bc858360f7ce9c696c77d3029668e'
             '95472ecfc2693c606f0dd50be2f012b4d683b7b0a313f51484da4537ab8b2bfe'
-            'fbb10b75ca7849f85ea2f118aa017f00e34445d80ed76619f13ae1e4e9504ae4')
+            'fbb10b75ca7849f85ea2f118aa017f00e34445d80ed76619f13ae1e4e9504ae4'
+            'c05fe7572ee5193cf3de7f02a500f446f3457ec20c315590a326bf1bfb5552cc')
 options=(!lto) # https://gitlab.archlinux.org/archlinux/packaging/packages/kdenlive/-/issues/8
 
 prepare() {
@@ -88,6 +91,7 @@ prepare() {
 
   pushd opencv_contrib
   patch -p1 -i ../fix-cudacodec-dependencies.patch # https://github.com/opencv/opencv_contrib/issues/4045
+  patch -p1 -i ../fix-std.patch
 }
 
 build() {

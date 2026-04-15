@@ -25,6 +25,7 @@ SPDX-License-Identifier = "0BSD"
 path = [
     "fix-cuda-flags.patch",
     "fix-cudacodec-dependencies.patch",
+    "fix-std.patch",
     "vtk9.patch",
 ]
 SPDX-FileCopyrightText = "opencv contributors"
