@@ -1,14 +1,12 @@
 pkgbase = opencv
 	pkgdesc = Open Source Computer Vision Library
 	pkgver = 4.13.0
-	pkgrel = 2
+	pkgrel = 3
 	url = https://opencv.org/
-	arch = x86_64
+	arch = aarch64
 	license = Apache-2.0
 	makedepends = ant
 	makedepends = cmake
-	makedepends = cuda
-	makedepends = cudnn
 	makedepends = eigen
 	makedepends = fmt
 	makedepends = git
@@ -68,27 +66,8 @@ pkgbase = opencv
 	sha256sums = 95472ecfc2693c606f0dd50be2f012b4d683b7b0a313f51484da4537ab8b2bfe
 	sha256sums = fbb10b75ca7849f85ea2f118aa017f00e34445d80ed76619f13ae1e4e9504ae4
 
-pkgname = opencv
-
-pkgname = opencv-samples
-	pkgdesc = Open Source Computer Vision Library (samples)
-	depends = opencv
-
-pkgname = python-opencv
-	pkgdesc = Python bindings for OpenCV
-	depends = fmt
-	depends = glew
-	depends = hdf5
-	depends = jsoncpp
-	depends = opencv
-	depends = openmpi
-	depends = pugixml
-	depends = python-numpy
-	depends = qt6-base
-	depends = vtk
-
-pkgname = opencv-cuda
-	pkgdesc = Open Source Computer Vision Library (with CUDA support)
+pkgname = opencv-fastcv
+	pkgdesc = Open Source Computer Vision Library (with Qualcomm FastCV support)
 	depends = abseil-cpp
 	depends = cblas
 	depends = ffmpeg
@@ -114,18 +93,20 @@ pkgname = opencv-cuda
 	depends = protobuf
 	depends = tbb
 	depends = zlib
-	depends = cudnn
+	depends = qcom-fastrpc
+	depends = qcom-fastcv-binaries
 	provides = opencv=4.13.0
 	conflicts = opencv
+	conflicts = opencv-cuda
 	options = !debug
 
-pkgname = python-opencv-cuda
-	pkgdesc = Python bindings for OpenCV (with CUDA support)
+pkgname = python-opencv-fastcv
+	pkgdesc = Python bindings for OpenCV (with Qualcomm FastCV support)
 	depends = fmt
 	depends = glew
 	depends = hdf5
 	depends = jsoncpp
-	depends = opencv-cuda
+	depends = opencv-fastcv
 	depends = openmpi
 	depends = pugixml
 	depends = python-numpy
@@ -133,3 +114,8 @@ pkgname = python-opencv-cuda
 	depends = vtk
 	provides = python-opencv=4.13.0
 	conflicts = python-opencv
+	conflicts = python-opencv-cuda
+
+pkgname = opencv-fastcv-tests
+	pkgdesc = Unit tests and perf tests for OpenCV FastCV module
+	depends = opencv-fastcv
